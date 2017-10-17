@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ ! -f "${1}" ] ; then
+  echo "Usage:"
+  echo "${0} /path/to/my/file.wave"
+  exit 1
+fi
+
+WAVFILE=`mktemp --suffix=.wav`
+
+# Normalize the input file
+sox "${1}" -r 16000 -c 1 "${WAVFILE}"
+
+/usr/local/bin/pocketsphinx_continuous -infile "${WAVFILE}" \
+  -hmm /usr/local/share/pocketsphinx/model/en-us/en-us \
+  -dict /usr/local/share/pocketsphinx/model/en-us/cmudict-en-us.dict \
+  -lm /usr/local/share/pocketsphinx/model/en-us/en-us.lm.bin \
+  -remove_noise no -remove_silence no \
+  -keyphrase key_phrases.txt 2> conversion.log
